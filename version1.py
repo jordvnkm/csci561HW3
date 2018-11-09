@@ -42,7 +42,7 @@ def average_money_earned():
         car = Car()
         start_string = content[current_index + offset]
         start_list = start_string.split(",")
-        car.set_start_location((start_list[0], start_list[1]))
+        car.set_start_location((int(start_list[0]), int(start_list[1])))
         cars_dict[offset] = car
 
     current_index += num_cars
@@ -50,7 +50,7 @@ def average_money_earned():
         car = cars_dict[offset]
         end_string = content[current_index + offset]
         end_list = end_string.split(",")
-        car.set_end_location((end_list[0], end_list[1]))
+        car.set_end_location((int(end_list[0]), int(end_list[1])))
         
     get_average_money_per_car(cars_dict, num_cars, grid_size, obstacles) 
 
@@ -127,7 +127,7 @@ def get_randomized_move(desired_move, swerve, k):
     if swerve[k] > 0.7:
         if swerve[k] > 0.8:
             if swerve[k] > 0.9:
-                return turn_left(turn_left(desired_move)):
+                return turn_left(turn_left(desired_move))
             else:
                 return turn_left(desired_move)
         else:
@@ -138,17 +138,26 @@ def get_next_location(grid_size, current_location, actual_move):
     move_delta = get_move_delta_from_move(actual_move)
     next_location = (current_location[0] + move_delta[0], current_location[1] + move_delta[1])
     if is_valid_location(next_location, grid_size):
-        return next_location:
+        return next_location
     else:
-        return current_location:
+        return current_location
 
 
 # Returns a bool indicating whether the location is in the grid.
 def is_valid_location(location, grid_size):
     if location[0] < 0 or location[0] >= grid_size:
+        output_file = open("output.txt", "a")
+        output_file.write("location = " + str(location) + " answer: " + str(False) + " gridsize:" + str(grid_size) + "\n")
+        output_file.close()
         return False
     if location[1] < 0 or location[1] >= grid_size:
+        output_file = open("output.txt", "a")
+        output_file.write("location = " + str(location) + " answer: " + str(False) + " gridsize:" + str(grid_size)+ "\n")
+        output_file.close()
         return False
+    output_file = open("output.txt", "a")
+    output_file.write("location = " + str(location) + " answer: " + str(True)+ " gridsize:" + str(grid_size) + "\n")
+    output_file.close()
     return True
     
 
@@ -208,8 +217,8 @@ def get_expected_cost_grid(car, grid_size, obstacles):
     lowest_cost_grid = []
     for col in range(0, grid_size):
         for row in range(0, grid_size):
-            column = [0] * 10;
-            grid.append(column)
+            column = [0] * grid_size;
+            lowest_cost_grid.append(column)
 
     for col in range(0, grid_size):
         for row in range(0, grid_size):
@@ -221,13 +230,15 @@ def get_expected_cost_grid(car, grid_size, obstacles):
 # fills the lowest cost grid at col, row.
 def fill_lowest_cost_grid(lowest_cost_grid, col, row, car, obstacles):
     visited = set()
-    grid_size = len(lowest_cost_grid)
+    grid_size = len(lowest_cost_grid[0])
+    output_file = open("output.txt", "a")
+    output_file.write("grid size ==" + str(grid_size) + "\n")
+    output_file.close()
     lowest_cost_grid[col][row] = get_cost_from_location(col, row, visited, car, obstacles, grid_size)
 
 # returns the lowest cost from current col, row to cars end location.
 def get_cost_from_location(col, row, visited, car, obstacles, grid_size):
     location = (col, row)
-
     if location == car.end_location:
         return -100
 
@@ -241,13 +252,14 @@ def get_cost_from_location(col, row, visited, car, obstacles, grid_size):
     for delta in deltas:
         new_col = col + delta[0]
         new_row = col + delta[1]
-        if is_valid_location((new_col, new_row), grid_size):
+        new_location = (new_col, new_row)
+        if is_valid_location(new_location, grid_size) and not (new_location in visited):
             min_cost = min(min_cost, get_cost_from_location(new_col, new_row, visited, car, obstacles, grid_size))
     visited.remove(location)
     return min_cost + cost
 
 def expected_cost_grid_from_lowest_cost_grid(lowest_cost_grid, car):
-    grid_size = len(lowest_cost_grid)
+    grid_size = len(lowest_cost_grid[0])
     expected_cost_grid = []
     for i in range(0, grid_size):
         column = [None] * grid_size
