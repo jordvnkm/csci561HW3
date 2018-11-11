@@ -235,7 +235,7 @@ def get_expected_utility_grid(car, grid_size, obstacles):
     utility_grid = []
     for col in range(0, grid_size):
         for row in range(0, grid_size):
-            column = [-1] * grid_size;
+            column = [-1.0] * grid_size;
             utility_grid.append(column)
 
     # update utility for obstacle squares
@@ -256,23 +256,26 @@ def get_expected_utility_grid(car, grid_size, obstacles):
 
 def value_iterate(utility_grid):
     grid_size = len(utility_grid[0])
-    max_diff = 0.0
     temp_grid = []
     for col in range(0, grid_size):
         for row in range(0, grid_size):
             column = [0.0] * grid_size;
             temp_grid.append(column)
 
-    while max_diff < (0.1 * (1.0 - 0.9) / 0.9):
+    #while max_diff > (0.1 * (1.0 - 0.9) / 0.9):
+    while True:
+        max_diff = 0.0
         for col in range(0, grid_size):
             for row in range(0, grid_size):
                 max_expected_utility = get_max_expected_utility(col, row, utility_grid)
                 updated_utility = utility_grid[col][row] + 0.9 * max_expected_utility
                 temp_grid[col][row] = updated_utility
-                current_diff = abs(max_expected_utility - utility_grid[col][row])
+                current_diff = abs(updated_utility - utility_grid[col][row])
                 if current_diff > max_diff:
                     max_diff = current_diff 
         utility_grid = temp_grid
+        if max_diff < 0.1:
+            break
 
     output_file = open("output.txt", "a")
     for col in range(0, grid_size):
