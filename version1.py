@@ -4,6 +4,7 @@
 # Run simulation for each car.
 
 import numpy as np
+import math
 
 # classes
 
@@ -84,7 +85,7 @@ def get_average_money(car, grid_size, obstacles):
     for seed in range(1, 11):
         total += get_money_earned(car, grid_size, obstacles, policy_grid, seed)
         
-    return total/10.0
+    return math.floor(total/10.0)
 
 # runs one leg of the simulation based on seed.
 def get_money_earned(car, grid_size, obstacles, policy_grid, seed):
@@ -98,16 +99,16 @@ def get_money_earned(car, grid_size, obstacles, policy_grid, seed):
     swerve = np.random.random_sample(1000000)
     k = 0
     while current_location != car.end_location:
-        # use index 0 for X, and index 1 for Y.
-        desired_move = policy_grid[current_location[0]][current_location[1]]
-        actual_move = get_randomized_move(desired_move, swerve, k)
-        current_location = get_next_location(grid_size, current_location, actual_move)
         # remove 1$ for gas
         money -= 1.0
 
         # remove 100$ for running into obstacle
         if current_location in obstacles:
             money -= 100.0
+        # use index 0 for X, and index 1 for Y.
+        desired_move = policy_grid[current_location[0]][current_location[1]]
+        actual_move = get_randomized_move(desired_move, swerve, k)
+        current_location = get_next_location(grid_size, current_location, actual_move)
         k += 1
 
     # we have broken out of loop and thus have reached end_location
@@ -203,8 +204,6 @@ def get_best_move(col, row, utility_grid, grid_size):
     east_utility = get_east_utility(col, row, utility_grid, grid_size)
 
     for direction in preference:
-        #delta = deltas[direction]
-
         utility = None
         if direction == "N":
             utility = 0.7 * north_utility + 0.1 * (west_utility + east_utility+ south_utility)
@@ -233,10 +232,9 @@ def is_higher_priority(direction1, direction2):
 # creates an expected utility grid
 def get_expected_utility_grid(car, grid_size, obstacles):
     utility_grid = []
-    for col in range(0, grid_size):
-        for row in range(0, grid_size):
-            column = [-1.0] * grid_size;
-            utility_grid.append(column)
+    for i in range(0, grid_size):
+        column = [-1.0] * grid_size;
+        utility_grid.append(column)
 
     # update utility for obstacle squares
     for location in obstacles:
@@ -246,23 +244,20 @@ def get_expected_utility_grid(car, grid_size, obstacles):
     end_row = car.end_location[1]
     utility_grid[end_col][end_row] += 100
     
-    return value_iterate(utility_grid)
+    return value_iterate(car, utility_grid)
 
-    #for col in range(0, grid_size):
-    #    for row in range(0, grid_size):
-    #        fill_lowest_cost_grid(lowest_cost_grid, col, row, car, obstacles)
 
-    #return expected_cost_grid_from_lowest_cost_grid(lowest_cost_grid, car)
 
-def value_iterate(utility_grid):
+
+def value_iterate(car, utility_grid):
     grid_size = len(utility_grid[0])
     temp_grid = []
-    for col in range(0, grid_size):
-        for row in range(0, grid_size):
-            column = [0.0] * grid_size;
-            temp_grid.append(column)
+    for i in range(0, grid_size):
+        column = [0.0] * grid_size;
+        temp_grid.append(column)
 
     #while max_diff > (0.1 * (1.0 - 0.9) / 0.9):
+    iteration = 1;
     while True:
         max_diff = 0.0
         for col in range(0, grid_size):
@@ -273,14 +268,19 @@ def value_iterate(utility_grid):
                 current_diff = abs(updated_utility - utility_grid[col][row])
                 if current_diff > max_diff:
                     max_diff = current_diff 
-        utility_grid = temp_grid
-        if max_diff < 0.1:
+        if max_diff < (0.1 * (1.0 - 0.9) / 0.9):
             break
+        utility_grid = temp_grid
+        iteration += 1
+    output_file = open("output.txt", "a")
+    output_file.write(str(iteration) + "\n")
+    output_file.close()
 
+    # do not submit
     output_file = open("output.txt", "a")
     for col in range(0, grid_size):
-        for row in range(0, grid_size):
-            output_file.write(str(utility_grid[col][row]) +"   ")
+        for  row in range(0, grid_size):
+            output_file.write(str(utility_grid[col][row]) + "   ")
         output_file.write("\n")
     output_file.close()
 
@@ -293,62 +293,15 @@ def get_max_expected_utility(col, row, utility_grid):
     south_utility = get_south_utility(col, row, utility_grid, grid_size)
     east_utility = get_east_utility(col, row, utility_grid, grid_size)
 
-    expected_north = 0.7 * north_utility + 0.1 * (west_utility + east_utility+ south_utility)
-    expected_south = 0.7 * south_utility + 0.1 * (west_utility + east_utility+ north_utility)
-    expected_west = 0.7 * west_utility + 0.1 * (south_utility + east_utility+ north_utility)
-    expected_east = 0.7 * east_utility + 0.1 * (south_utility + west_utility+ north_utility)
+    expected_north = (0.7 * north_utility) + (0.1 * (west_utility + east_utility + south_utility))
+    expected_south = (0.7 * south_utility) + (0.1 * (west_utility + east_utility + north_utility))
+    expected_west = (0.7 * west_utility) + (0.1 * (south_utility + east_utility + north_utility))
+    expected_east = (0.7 * east_utility) + (0.1 * (south_utility + west_utility + north_utility))
+
     return max([expected_north, expected_south, expected_west, expected_east])
 
 
 
-# fills the lowest cost grid at col, row.
-def fill_lowest_cost_grid(lowest_cost_grid, col, row, car, obstacles):
-    visited = set()
-    grid_size = len(lowest_cost_grid[0])
-    get_cost_from_location(lowest_cost_grid, col, row, visited, car, obstacles, grid_size)
-    #cost= get_cost_from_location(col, row, visited, car, obstacles, grid_size)
-    #lowest_cost_grid[col][row] = cost 
-
-# returns the lowest cost from current col, row to cars end location.
-def get_cost_from_location(lowest_cost_grid, col, row, visited, car, obstacles, grid_size):
-    location = (col, row)
-    if location == car.end_location:
-        lowest_cost_grid[col][row] = 0
-        #return -100
-
-    if lowest_cost_grid[col][row] != None:
-        return lowest_cost_grid[col][row]
-
-    cost = 1
-    if location in obstacles:
-        cost += 100
-
-    visited.add(location)
-    deltas = [[1,0], [0,1], [-1,0], [0,-1]]
-    min_cost = None
-    for delta in deltas:
-        new_col = col + delta[0]
-        new_row = row + delta[1]
-        new_location = (new_col, new_row)
-        if is_valid_location(new_location, grid_size) and not new_location in visited:
-            get_cost_from_location(lowest_cost_grid, new_col, new_row, visited, car, obstacles, grid_size)
-            new_cost = lowest_cost_grid[new_col][new_row]
-            if min_cost == None and new_cost != None:
-                min_cost = new_cost
-            elif new_cost != None:
-                min_cost = min(min_cost, new_cost)
-    visited.remove(location)
-    final_cost = cost
-    if min_cost:
-        final_cost += min_cost
-    if lowest_cost_grid[col][row]:
-        lowest_cost_grid[col][row] = min(final_cost, lowest_cost_grid[col][row])
-    else:
-        lowest_cost_grid[col][row] = final_cost
-    #    lowest_cost_grid[col][row] = min_cost + cost
-    #else:
-    #    lowest_cost_grid[col][row] = cost
-    #return min_cost + cost
 
 def get_north_utility(col, row, utility_grid, grid_size):
     if is_valid_location((col, row + 1), grid_size):
