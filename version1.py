@@ -65,24 +65,12 @@ def get_average_money_per_car(cars_dict, num_cars, grid_size, obstacles):
         output_file = open("output.txt", "a")
         output_file.write(str(average_money) + "\n")
         output_file.close()
-        return
 
 # returns the average money per car.
 def get_average_money(car, grid_size, obstacles):
     total = 0.0
     expected_utility_grid  = get_expected_utility_grid(car, grid_size, obstacles) 
     policy_grid = create_policy_grid(expected_utility_grid, grid_size)
-
-    # do not submit
-    output_file = open("output.txt", "a")
-    output_file.write("\n")
-    output_file.write("\n")
-    for col in range(0, grid_size):
-        for row in range(0, grid_size):
-            output_file.write(str(policy_grid[col][row]) +"   ")
-        output_file.write("\n")
-    output_file.close()
-
     for seed in range(1, 11):
         total += get_money_earned(car, grid_size, obstacles, policy_grid, seed)
         
@@ -267,42 +255,11 @@ def value_iterate(car, utility_grid, obstacles):
                 updated_utility = reward + 0.9 * max_expected_utility
                 temp_grid[col][row] = updated_utility
                 current_diff = abs(updated_utility - utility_grid[col][row])
-
-                #output_file = open("output.txt", "a")
-                #output_file.write(str(max_expected_utility)  + "\n")
-                #output_file.close()
                 if current_diff > max_diff:
                     max_diff = current_diff 
-        # do not submit
-        output_file = open("output.txt", "a")
-        output_file.write("\n")
-        for col in range(0, grid_size):
-            for  row in range(0, grid_size):
-                output_file.write(str(temp_grid[col][row]) + "   ")
-            output_file.write("\n")
-        output_file.close()
-
-        # do not submit
-        output_file = open("output.txt", "a")
-        output_file.write("\n")
-        for col in range(0, grid_size):
-            for  row in range(0, grid_size):
-                output_file.write(str(utility_grid[col][row]) + "   ")
-            output_file.write("\n")
-        output_file.write(str(max_diff) + "\n")
-        output_file.close()
-
+        utility_grid = temp_grid
         if max_diff < (0.1 * (1.0 - 0.9) / 0.9):
             break
-        utility_grid = copy.copy(temp_grid)
-
-    # do not submit
-    #output_file = open("output.txt", "a")
-    #for col in range(0, grid_size):
-    #    for  row in range(0, grid_size):
-    #        output_file.write(str(utility_grid[col][row]) + "   ")
-    #    output_file.write("\n")
-    #output_file.close()
 
     return utility_grid
 
