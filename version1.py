@@ -252,13 +252,13 @@ def get_expected_utility_grid(car, grid_size, obstacles):
 
 def value_iterate(car, utility_grid, obstacles):
     grid_size = len(utility_grid[0])
-    temp_grid = []
-    for i in range(0, grid_size):
-        column = [0.0] * grid_size;
-        temp_grid.append(column)
 
     #while max_diff > (0.1 * (1.0 - 0.9) / 0.9):
     while True:
+        temp_grid = []
+        for i in range(0, grid_size):
+            column = [0.0] * grid_size;
+            temp_grid.append(column)
         max_diff = 0.0
         for col in range(0, grid_size):
             for row in range(0, grid_size):
@@ -269,13 +269,22 @@ def value_iterate(car, utility_grid, obstacles):
                 current_diff = abs(updated_utility - utility_grid[col][row])
 
                 #output_file = open("output.txt", "a")
-                #output_file.write(str(current_diff) + " " + str(max_diff) + " " + "\n")
+                #output_file.write(str(max_expected_utility)  + "\n")
                 #output_file.close()
                 if current_diff > max_diff:
                     max_diff = current_diff 
+        # do not submit
+        output_file = open("output.txt", "a")
+        output_file.write("\n")
+        for col in range(0, grid_size):
+            for  row in range(0, grid_size):
+                output_file.write(str(temp_grid[col][row]) + "   ")
+            output_file.write("\n")
+        output_file.close()
 
         # do not submit
         output_file = open("output.txt", "a")
+        output_file.write("\n")
         for col in range(0, grid_size):
             for  row in range(0, grid_size):
                 output_file.write(str(utility_grid[col][row]) + "   ")
