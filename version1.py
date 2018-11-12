@@ -5,6 +5,7 @@
 
 import numpy as np
 import math
+import copy
 
 # classes
 
@@ -244,12 +245,12 @@ def get_expected_utility_grid(car, grid_size, obstacles):
     end_row = car.end_location[1]
     utility_grid[end_col][end_row] += 100
     
-    return value_iterate(car, utility_grid)
+    return value_iterate(car, utility_grid, obstacles)
 
 
 
 
-def value_iterate(car, utility_grid):
+def value_iterate(car, utility_grid, obstacles):
     grid_size = len(utility_grid[0])
     temp_grid = []
     for i in range(0, grid_size):
@@ -257,32 +258,42 @@ def value_iterate(car, utility_grid):
         temp_grid.append(column)
 
     #while max_diff > (0.1 * (1.0 - 0.9) / 0.9):
-    iteration = 1;
     while True:
         max_diff = 0.0
         for col in range(0, grid_size):
             for row in range(0, grid_size):
                 max_expected_utility = get_max_expected_utility(col, row, utility_grid)
-                updated_utility = utility_grid[col][row] + 0.9 * max_expected_utility
+                reward = get_reward((col, row),car, obstacles)
+                updated_utility = reward + 0.9 * max_expected_utility
                 temp_grid[col][row] = updated_utility
                 current_diff = abs(updated_utility - utility_grid[col][row])
+
+                #output_file = open("output.txt", "a")
+                #output_file.write(str(current_diff) + " " + str(max_diff) + " " + "\n")
+                #output_file.close()
                 if current_diff > max_diff:
                     max_diff = current_diff 
+
+        # do not submit
+        output_file = open("output.txt", "a")
+        for col in range(0, grid_size):
+            for  row in range(0, grid_size):
+                output_file.write(str(utility_grid[col][row]) + "   ")
+            output_file.write("\n")
+        output_file.write(str(max_diff) + "\n")
+        output_file.close()
+
         if max_diff < (0.1 * (1.0 - 0.9) / 0.9):
             break
-        utility_grid = temp_grid
-        iteration += 1
-    output_file = open("output.txt", "a")
-    output_file.write(str(iteration) + "\n")
-    output_file.close()
+        utility_grid = copy.copy(temp_grid)
 
     # do not submit
-    output_file = open("output.txt", "a")
-    for col in range(0, grid_size):
-        for  row in range(0, grid_size):
-            output_file.write(str(utility_grid[col][row]) + "   ")
-        output_file.write("\n")
-    output_file.close()
+    #output_file = open("output.txt", "a")
+    #for col in range(0, grid_size):
+    #    for  row in range(0, grid_size):
+    #        output_file.write(str(utility_grid[col][row]) + "   ")
+    #    output_file.write("\n")
+    #output_file.close()
 
     return utility_grid
 
@@ -300,32 +311,38 @@ def get_max_expected_utility(col, row, utility_grid):
 
     return max([expected_north, expected_south, expected_west, expected_east])
 
-
+def get_reward(location, car, obstacles):
+    if location in obstacles:
+        return -101
+    elif location == car.end_location:
+        return 99
+    else:
+        return -1
 
 
 def get_north_utility(col, row, utility_grid, grid_size):
     if is_valid_location((col, row + 1), grid_size):
         return utility_grid[col][row + 1]
     else:
-        return utility_grid[col][row] + 1
+        return utility_grid[col][row]
 
 def get_south_utility(col, row, utility_grid, grid_size):
     if is_valid_location((col, row - 1), grid_size):
         return utility_grid[col][row - 1]
     else:
-        return utility_grid[col][row] + 1
+        return utility_grid[col][row]
 
 def get_east_utility(col, row, utility_grid, grid_size):
     if is_valid_location((col + 1, row), grid_size):
         return utility_grid[col + 1][row]
     else:
-        return utility_grid[col][row] + 1
+        return utility_grid[col][row]
 
 def get_west_utility(col, row, utility_grid, grid_size):
     if is_valid_location((col - 1, row), grid_size):
         return utility_grid[col - 1][row]
     else:
-        return utility_grid[col][row] + 1
+        return utility_grid[col][row]
 
 if __name__ == "__main__":
     average_money_earned()
