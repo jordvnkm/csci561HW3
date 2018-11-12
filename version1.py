@@ -65,12 +65,24 @@ def get_average_money_per_car(cars_dict, num_cars, grid_size, obstacles):
         output_file = open("output.txt", "a")
         output_file.write(str(average_money) + "\n")
         output_file.close()
+        return
 
 # returns the average money per car.
 def get_average_money(car, grid_size, obstacles):
     total = 0.0
     expected_utility_grid  = get_expected_utility_grid(car, grid_size, obstacles) 
     policy_grid = create_policy_grid(expected_utility_grid, grid_size)
+
+    #do not submit
+    output_file = open("output.txt", "a")
+    output_file.write("\n")
+    output_file.write("\n")
+    for col in range(0, grid_size):
+        for row in range(0, grid_size):
+            output_file.write(str(policy_grid[col][row]) + "   ")
+        output_file.write("\n")
+    output_file.close()
+
     for seed in range(1, 11):
         total += get_money_earned(car, grid_size, obstacles, policy_grid, seed)
         
@@ -81,7 +93,7 @@ def get_money_earned(car, grid_size, obstacles, policy_grid, seed):
     current_location = car.start_location
     # if we start in the end location, then return 100 (probably unneeded)
     if current_location == car.end_location:
-        return 100
+        return 99.0
 
     money = 0.0
     np.random.seed(seed)   
@@ -94,14 +106,24 @@ def get_money_earned(car, grid_size, obstacles, policy_grid, seed):
         # remove 100$ for running into obstacle
         if current_location in obstacles:
             money -= 100.0
+
+        #do not submit
+        output_file = open("output.txt", "a")
+        output_file.write("curr: " + str(current_location) + " money: " + str(money) +  "\n")
+        output_file.close()
+
         # use index 0 for X, and index 1 for Y.
         desired_move = policy_grid[current_location[0]][current_location[1]]
         actual_move = get_randomized_move(desired_move, swerve, k)
         current_location = get_next_location(grid_size, current_location, actual_move)
         k += 1
 
+    #do not submit
+    money += 99.0
+    output_file = open("output.txt", "a")
+    output_file.write("at end money: " + " money: " + str(money) +  "\n")
+    output_file.close()
     # we have broken out of loop and thus have reached end_location
-    money += 100.0
     return money
 
 def turn_left(move):
@@ -126,14 +148,35 @@ def turn_right(move):
 
 # returns a direction (N, S, E , W)
 def get_randomized_move(desired_move, swerve, k):
+
+    swerve_val = str(swerve[k])
+
+    output_file = open("output.txt", "a")
     if swerve[k] > 0.7:
         if swerve[k] > 0.8:
             if swerve[k] > 0.9:
-                return turn_left(turn_left(desired_move))
+                val = turn_left(turn_left(desired_move))
+                #do not submit
+                output_file.write("swerve_val: " + swerve_val + " desired: " + desired_move + " actual: " + val +"\n")
+                output_file.close()
+
+                return val
             else:
-                return turn_left(desired_move)
+                val = turn_left(desired_move)
+                #do not submit
+                output_file.write("swerve_val: " + swerve_val + " desired: " + desired_move + " actual: " + val+ "\n")
+                output_file.close()
+                return val
         else:
+            val = turn_right(desired_move)
+            #do not submit
+            output_file.write("swerve_val: " + swerve_val + " desired: " + desired_move + " actual: " + val+ "\n")
+            output_file.close()
             return turn_right(desired_move)
+
+    #do not submit
+    output_file.write("swerve_val: " + swerve_val + " desired: " + desired_move + " actual: " + desired_move+ "\n")
+    output_file.close()
     return desired_move
 
 # returns the next grid coordinate based on current location and move.
@@ -227,11 +270,11 @@ def get_expected_utility_grid(car, grid_size, obstacles):
 
     # update utility for obstacle squares
     for location in obstacles:
-        utility_grid[location[0]][location[1]] -= 100
+        utility_grid[location[0]][location[1]] -= 100.0
 
     end_col = car.end_location[0]
     end_row = car.end_location[1]
-    utility_grid[end_col][end_row] += 100
+    utility_grid[end_col][end_row] += 100.0
     
     return value_iterate(car, utility_grid, obstacles)
 
@@ -251,15 +294,43 @@ def value_iterate(car, utility_grid, obstacles):
         for col in range(0, grid_size):
             for row in range(0, grid_size):
                 max_expected_utility = get_max_expected_utility(col, row, utility_grid)
+
+                # do not submit
+                #output_file = open("output.txt", "a")
+                #output_file.write(str(col) + " "+  str(row) + " "+  str(max_expected_utility) + "\n")
+                #output_file.close()
+
+
                 reward = get_reward((col, row),car, obstacles)
                 updated_utility = reward + 0.9 * max_expected_utility
                 temp_grid[col][row] = updated_utility
                 current_diff = abs(updated_utility - utility_grid[col][row])
                 if current_diff > max_diff:
                     max_diff = current_diff 
+
+        #do not submit
+        output_file = open("output.txt", "a")
+        output_file.write("\n")
+        output_file.write("\n")
+        for col in range(0, grid_size):
+            for row in range(0, grid_size):
+                output_file.write(str(utility_grid[col][row]) + "   ")
+            output_file.write("\n")
+        output_file.close()
+
         utility_grid = temp_grid
         if max_diff < (0.1 * (1.0 - 0.9) / 0.9):
             break
+
+    #do not submit
+    #output_file = open("output.txt", "a")
+    #output_file.write("\n")
+    #output_file.write("\n")
+    #for col in range(0, grid_size):
+    #    for row in range(0, grid_size):
+    #        output_file.write(str(utility_grid[col][row]) + "   ")
+    #    output_file.write("\n")
+    #output_file.close()
 
     return utility_grid
 
@@ -270,20 +341,20 @@ def get_max_expected_utility(col, row, utility_grid):
     south_utility = get_south_utility(col, row, utility_grid, grid_size)
     east_utility = get_east_utility(col, row, utility_grid, grid_size)
 
-    expected_north = (0.7 * north_utility) + (0.1 * (west_utility + east_utility + south_utility))
-    expected_south = (0.7 * south_utility) + (0.1 * (west_utility + east_utility + north_utility))
-    expected_west = (0.7 * west_utility) + (0.1 * (south_utility + east_utility + north_utility))
-    expected_east = (0.7 * east_utility) + (0.1 * (south_utility + west_utility + north_utility))
+    expected_north = (0.7 * north_utility) + (0.1 * west_utility) + (0.1 * east_utility)  + (0.1 * south_utility)
+    expected_south = (0.7 * south_utility) + (0.1 *west_utility) + (0.1*east_utility) + (0.1*north_utility)
+    expected_west = (0.7 * west_utility) + (0.1 * south_utility) + (0.1*east_utility) + (0.1*north_utility)
+    expected_east = (0.7 * east_utility) + (0.1 * south_utility) + (0.1*west_utility) + (0.1*north_utility)
 
     return max([expected_north, expected_south, expected_west, expected_east])
 
 def get_reward(location, car, obstacles):
     if location in obstacles:
-        return -101
+        return -101.0
     elif location == car.end_location:
-        return 99
+        return 99.0
     else:
-        return -1
+        return -1.0
 
 
 def get_north_utility(col, row, utility_grid, grid_size):
