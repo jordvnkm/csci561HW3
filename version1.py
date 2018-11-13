@@ -36,10 +36,12 @@ def average_money_earned():
         obstacle_string = content[3 + offset]
         obstacle_list = obstacle_string.split(",")
         obstacles.add((int(obstacle_list[0]), int(obstacle_list[1])))
-    output_file = open("output.txt", "a")
-    output_file.write(str(obstacles))
-    output_file.write("\n")
-    output_file.close()
+
+
+    #output_file = open("output.txt", "a")
+    #output_file.write(str(obstacles))
+    #output_file.write("\n")
+    #output_file.close()
 
     current_index = 3 + num_obstacles
     # have cars in dictionary from num -> car
@@ -63,13 +65,12 @@ def average_money_earned():
 
 # write to output the average money per car.
 def get_average_money_per_car(cars_dict, num_cars, grid_size, obstacles):
-    for index in range(5, num_cars):
+    for index in range(0, num_cars):
         car = cars_dict[index]
         average_money = get_average_money(car, grid_size, obstacles)
         output_file = open("output.txt", "a")
         output_file.write(str(average_money) + "\n")
         output_file.close()
-        return
 
 # returns the average money per car.
 def get_average_money(car, grid_size, obstacles):
@@ -78,19 +79,19 @@ def get_average_money(car, grid_size, obstacles):
     policy_grid = create_policy_grid(expected_utility_grid, grid_size)
 
     #do not submit
-    output_file = open("output.txt", "a")
-    output_file.write("\n")
-    output_file.write("\n")
-    for col in range(0, grid_size):
-        for row in range(0, grid_size):
-            output_file.write(str(policy_grid[col][row]) + "   ")
-        output_file.write("\n")
-    output_file.close()
+    #output_file = open("output.txt", "a")
+    #output_file.write("\n")
+    #output_file.write("\n")
+    #for col in range(0, grid_size):
+    #    for row in range(0, grid_size):
+    #        output_file.write(str(policy_grid[col][row]) + "   ")
+    #    output_file.write("\n")
+    #output_file.close()
 
     for seed in range(1, 11):
         total += get_money_earned(car, grid_size, obstacles, policy_grid, seed)
         
-    return math.floor(total/10.0)
+    return int(math.floor(total/10.0))
 
 # runs one leg of the simulation based on seed.
 def get_money_earned(car, grid_size, obstacles, policy_grid, seed):
@@ -99,9 +100,9 @@ def get_money_earned(car, grid_size, obstacles, policy_grid, seed):
     if current_location == car.end_location:
         return 99.0
 
-    output_file = open("output.txt", "a")
-    output_file.write("seed: " + str(seed) +  "\n")
-    output_file.close()
+    #output_file = open("output.txt", "a")
+    #output_file.write("seed: " + str(seed) +  "\n")
+    #output_file.close()
 
     money = 0.0
     np.random.seed(seed)   
@@ -109,9 +110,9 @@ def get_money_earned(car, grid_size, obstacles, policy_grid, seed):
     k = 0
     while current_location != car.end_location:
         #do not submit
-        output_file = open("output.txt", "a")
-        output_file.write("curr: " + str(current_location) + " money: " + str(money) +  "\n")
-        output_file.close()
+        #output_file = open("output.txt", "a")
+        #output_file.write("curr: " + str(current_location) + " money: " + str(money) +  "\n")
+        #output_file.close()
 
         # use index 0 for X, and index 1 for Y.
         desired_move = policy_grid[current_location[0]][current_location[1]]
@@ -129,10 +130,10 @@ def get_money_earned(car, grid_size, obstacles, policy_grid, seed):
 
     #do not submit
     money += 100.0
-    output_file = open("output.txt", "a")
-    output_file.write("at end money: " + " money: " + str(money) +  "\n")
-    output_file.write("\n")
-    output_file.close()
+    #output_file = open("output.txt", "a")
+    #output_file.write("at end money: " + " money: " + str(money) +  "\n")
+    #output_file.write("\n")
+    #output_file.close()
     # we have broken out of loop and thus have reached end_location
     return money
 
@@ -159,34 +160,36 @@ def turn_right(move):
 # returns a direction (N, S, E , W)
 def get_randomized_move(desired_move, swerve, k):
 
-    swerve_val = str(swerve[k])
+    swerve_round = swerve[k]
+    #swerve_val = str(swerve[k])
+    swerve_val = str(swerve_round)
 
-    output_file = open("output.txt", "a")
-    if swerve[k] > 0.7:
-        if swerve[k] > 0.8:
-            if swerve[k] > 0.9:
+    #output_file = open("output.txt", "a")
+    if swerve_round > 0.7:
+        if swerve_round > 0.8:
+            if swerve_round > 0.9:
                 val = turn_left(turn_left(desired_move))
                 #do not submit
-                output_file.write("swerve_val: " + swerve_val + " desired: " + desired_move + " actual: " + val + " k: " + str(k) + "\n")
-                output_file.close()
+                #output_file.write("swerve_val: " + swerve_val + " desired: " + desired_move + " actual: " + val + " k: " + str(k) + "\n")
+                #output_file.close()
 
                 return val
             else:
                 val = turn_left(desired_move)
                 #do not submit
-                output_file.write("swerve_val: " + swerve_val + " desired: " + desired_move + " actual: " + val+ " k: " + str(k) + "\n")
-                output_file.close()
+                #output_file.write("swerve_val: " + swerve_val + " desired: " + desired_move + " actual: " + val+ " k: " + str(k) + "\n")
+                #output_file.close()
                 return val
         else:
             val = turn_right(desired_move)
             #do not submit
-            output_file.write("swerve_val: " + swerve_val + " desired: " + desired_move + " actual: " + val+ " k: " + str(k) + "\n")
-            output_file.close()
+            #output_file.write("swerve_val: " + swerve_val + " desired: " + desired_move + " actual: " + val+ " k: " + str(k) + "\n")
+            #output_file.close()
             return turn_right(desired_move)
 
     #do not submit
-    output_file.write("swerve_val: " + swerve_val + " desired: " + desired_move + " actual: " + desired_move+ " k: " + str(k) + "\n")
-    output_file.close()
+    #output_file.write("swerve_val: " + swerve_val + " desired: " + desired_move + " actual: " + desired_move+ " k: " + str(k) + "\n")
+    #output_file.close()
     return desired_move
 
 # returns the next grid coordinate based on current location and move.
@@ -303,9 +306,9 @@ def value_iterate(car, utility_grid, obstacles):
                 max_expected_utility = get_max_expected_utility(col, row, utility_grid)
 
                 # do not submit
-                output_file = open("output.txt", "a")
-                output_file.write(str(col) + " "+  str(row) + " "+  str(max_expected_utility) + "\n")
-                output_file.close()
+                #output_file = open("output.txt", "a")
+                #output_file.write(str(col) + " "+  str(row) + " "+  str(max_expected_utility) + "\n")
+                #output_file.close()
 
 
                 reward = get_reward((col, row),car, obstacles)
@@ -316,16 +319,18 @@ def value_iterate(car, utility_grid, obstacles):
                     max_diff = current_diff 
 
         #do not submit
-        output_file = open("output.txt", "a")
-        output_file.write("\n")
-        output_file.write("\n")
-        for col in range(0, grid_size):
-            for row in range(0, grid_size):
-                output_file.write(str(utility_grid[col][row]) + "   ")
-            output_file.write("\n")
-        output_file.close()
+        #output_file = open("output.txt", "a")
+        #output_file.write("\n")
+        #output_file.write("\n")
+        #for col in range(0, grid_size):
+        #    for row in range(0, grid_size):
+        #        output_file.write(str(utility_grid[col][row]) + "   ")
+        #    output_file.write("\n")
+        #output_file.write(str(max_diff) + "\n")
+        #output_file.close()
 
-        if max_diff < (0.1 * (1.0 - 0.9) / 0.9):
+        #if max_diff < (0.1 * (1.0 - 0.9) / 0.9):
+        if max_diff < 0.1:
             break
         utility_grid = temp_grid
 
